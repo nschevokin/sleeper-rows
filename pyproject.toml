@@ -1,0 +1,63 @@
+[project]
+name = "sleeper-rows"
+version = "0.1.0"
+description = "Measuring prompt-injection persistence across a data pipeline, with a lineage-based taint guard."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.11"
+dependencies = [
+  "dagster>=1.9",
+  "duckdb>=1.1",
+  "polars>=1.0",
+  "pyarrow>=16",
+  "pyiceberg[sql-sqlite]>=0.8",
+  "sqlglot>=25",
+  "pydantic>=2.7",
+  "pyyaml>=6",
+  "httpx>=0.27",
+  "numpy>=1.26",
+  "scipy>=1.12",
+  "taintguard",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8",
+  "ruff>=0.6",
+  "mypy>=1.11",
+  "pre-commit>=3.8",
+  "types-PyYAML",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.sources]
+taintguard = { workspace = true }
+
+[tool.uv.workspace]
+members = ["guard"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "guard/tests"]
+pythonpath = ["."]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["observatory/node_modules"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+# The formatter owns line length; long literals and comments are allowed.
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_unused_ignores = true
+check_untyped_defs = true
+files = ["pipeline", "agents", "attacks", "eval", "fixtures", "observatory", "guard/src/taintguard"]
+explicit_package_bases = true
+mypy_path = ".:guard/src"
