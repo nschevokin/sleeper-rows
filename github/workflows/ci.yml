@@ -1,0 +1,23 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --all-packages --frozen
+      - run: make check
+      # Full pipeline -> attacks -> eval on the synthetic fixture with the deterministic
+      # stub model. No LLM, no network, no NHTSA download.
+      - run: make fixture run MODE=stub
+      - run: make eval MODE=stub
+      - run: uv run python -m eval.enrich_attack all --config eval/configs/enrich_stub.yaml --out-dir results
+      - uses: actions/upload-artifact@v4
+        with:
+          name: stub-report
+          path: results/stub/REPORT.md
