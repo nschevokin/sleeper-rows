@@ -1,0 +1,16 @@
+name: real1
+snapshot: "data/raw/snapshot.yaml"
+models:
+  - {name: "llama3.1:8b", kind: ollama, digest: "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e"}
+defenses: [none, prompt_hardening, detector, taintguard]
+knowledge: [blackbox]
+placements: [narrative, field, batch]
+doses: [5]
+seeds: 1
+targets_per_kind: 1
+sleeper_targets: 2
+split: test
+out_dir: results
+baseline: true
+baseline_weeks: 6
+n_boot: 1000

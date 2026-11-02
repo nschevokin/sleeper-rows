@@ -1,0 +1,16 @@
+# Plumbing run on the synthetic fixture with the deterministic stub model.
+# NOTHING produced by this config is a finding: the stub is gullible by construction.
+name: stub
+snapshot: "fixture:tiny"
+models:
+  - {name: stub-susceptible, kind: stub}
+defenses: [none, prompt_hardening, detector, taintguard]
+families: [instruction_override, data_masquerade, number_tampering, laundering, sleeper, tool_hijack]
+knowledge: [blackbox]
+placements: [narrative, field, batch]
+doses: [1, 5]
+seeds: 1
+targets_per_kind: 1
+split: all
+out_dir: results
+baseline: true

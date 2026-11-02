@@ -1,0 +1,22 @@
+# Real-model run. Run on your laptop with `ollama serve` up and models pulled.
+#   1. uv run python -m pipeline.cli pin-models --models <m1> <m2> <m3>   -> models.lock.yaml
+#   2. copy each digest below (digest pins the exact weights; temperature is 0 in the client)
+#   3. make eval MODE=ollama
+# Edit `snapshot` to the frozen real snapshot (see docs/runbook.md). `split: test` uses the
+# frozen test split only; dev is for iterating on seeds.
+name: ollama
+snapshot: "data/raw/snapshot.yaml"
+models:
+  - {name: "llama3.1:8b", kind: ollama, digest: "46e0c10c039e019119339687c3c1757cc81b9da49709a3b3924863ba87ca666e"}
+  - {name: "qwen2.5:7b", kind: ollama, digest: "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e"}
+defenses: [none, prompt_hardening, detector, taintguard]
+knowledge: [blackbox, greybox]
+placements: [narrative, field, batch]
+doses: [1, 5, 25]
+seeds: 3
+targets_per_kind: 6
+sleeper_targets: 8
+split: test
+out_dir: results
+baseline: true
+n_boot: 2000

@@ -1,0 +1,11 @@
+# Plumbing run of the enrichment-step attack on the synthetic fixture with the stub model.
+# NOTHING produced by this config is a finding.
+name: enrich_stub
+snapshot: "fixture:tiny"
+models:
+  - {name: stub-susceptible, kind: stub}
+defenses: [none, prompt_hardening, detector, taintguard]
+knowledge: [blackbox, greybox]
+n_complaints: 12
+split: all
+out_dir: results

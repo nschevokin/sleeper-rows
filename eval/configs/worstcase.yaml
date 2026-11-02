@@ -1,0 +1,20 @@
+# Susceptibility bound on the real snapshot: a scripted agent that always follows injected text.
+# Not a model result.
+name: worstcase
+snapshot: "data/raw/snapshot.yaml"
+models:
+  - {name: stub-susceptible, kind: stub}
+defenses: [none, prompt_hardening, detector, taintguard]
+knowledge: [blackbox]
+placements: [narrative, field, batch]
+doses: [1, 5]
+seeds: 1
+targets_per_kind: 2
+sleeper_targets: 4
+split: test
+out_dir: results
+baseline: false
+n_boot: 1000
+summary_mode: extractive
+dq_inspect_rows: true
+analyst_read_summaries: true
