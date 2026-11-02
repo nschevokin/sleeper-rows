@@ -1,0 +1,74 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=2.3cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs,graphicx,hyperref,amsmath,url}
+\usepackage[numbers]{natbib}
+\setlength{\parskip}{3pt}
+\title{Sleeper Rows: Do Poisoned Warehouse Rows Reach the LLM Agents that Read Them,\\and Does Lineage-Based Taint Tracking Help?}
+\author{Nikita Chevokin\\\small Independent project (portfolio)}
+\date{November 2026 -- draft}
+\begin{document}
+\maketitle
+\begin{abstract}
+LLM agents increasingly read tables that other people write. We build a small data platform over public NHTSA vehicle-complaint data, four LLM components on top of it (enrichment, triage, analyst, data quality), a fixed suite of six hand-written injection families, and a lineage-based defense (\emph{TaintGuard}) that tracks trust tiers through SQL with sqlglot. We compare it with prompt hardening and an input detector on one open 8B model (llama3.1:8b, temperature 0). Two findings stand out. First, downstream agents are \emph{rarely exposed}: in the natural pipeline an LLM summariser removes the payload before any agent sees it, and attack success is at most 3\% for every defense (n up to 45 per cell, so this is a bound, not a rate). Second, the one component that always reads raw attacker text, the enrichment labeler, is easy to steer (up to 100\% of applicable severity attacks), and TaintGuard by design does not help there, while the detector cuts success by 27 points. Prompt hardening roughly halves accuracy on benign work. All results come from a single model and small samples; we state what they do and do not show.
+\end{abstract}
+
+\section{Introduction}
+Indirect prompt injection \citep{greshake2023,perez2022} is usually studied with an agent that reads a web page or an email. In data engineering the reader is often further away from the attacker: free text lands in a warehouse, is transformed by SQL and models, and an agent later queries aggregates. The question is whether a poisoned row still carries its effect at that point, and whether tracking provenance through the transformations (as in design-level defenses \citep{debenedetti2025}) is worth its cost against simpler measures.
+
+\textbf{Contributions.} (i) A reproducible platform and attack matrix with matched benign controls and warehouse-scored outcomes (no LLM judge). (ii) An \emph{exposure funnel} measuring where a payload survives (landing, staging, enrichment, gold, agent input). (iii) A comparison of four defenses on attack success and on benign accuracy. (iv) An attack on the enrichment step that isolates the residual risk TaintGuard declares.
+
+\section{System}
+\textbf{Data.} Public NHTSA complaints \citep{nhtsa}, frozen as a snapshot, ingested with contract tests into Iceberg tables; Polars and DuckDB build staging and gold models. Rows whose component vocabulary violates the contract go to quarantine (969 rows, all child car-seat equipment complaints).
+\textbf{Agents.} Enrichment writes severity (1--5), component and a summary per complaint; triage flags emerging weekly clusters; the analyst answers questions over gold tables; the data-quality agent files tickets for failed checks. All run on llama3.1:8b through Ollama, model pinned by digest, temperature 0.
+\textbf{TaintGuard.} Values carry a trust tier (trusted $<$ structured $<$ untrusted). Lineage through SQL is computed with sqlglot and fails closed. Free text goes through a quarantined extractor, tool calls obey a policy, and answers carry provenance and are flagged if they rest on untrusted values. Enrichment output is validated against the data contract, but the enrichment input hook is the identity by design; in-range typed values (a wrong severity) pass through (residual R2).
+\textbf{Baselines.} \emph{Prompt hardening} adds defensive instructions; the \emph{detector} screens inputs.
+
+\section{Attack suite and protocol}
+Six fixed payload families (instruction override, data masquerade, laundering and others), three placements (narrative, field, batch), dose, blackbox/greybox knowledge, seeds. Payloads are hand-written and public; there is no automated generator, so adaptive attackers are a limitation. Each trial has a \emph{matched control}: identical rows and an equal-length benign twin. A trial is a success only if the goal is met and the control did not already show the effect. Targets are split by hash into dev and test; we report test. Intervals are cluster bootstrap over targets and exact Wilson intervals (exact at $k=0$); defenses are compared with exact McNemar tests on matched trials.
+
+\section{Results}
+\subsection{Exposure funnel}
+Figure~\ref{fig:funnel} shows the share of undefended narrative-placement trials in which the payload is still present at each layer. With the model summariser in place, 0\% survive enrichment (the 8B summariser rewrites the text), so nothing reaches gold or the agents. When we replace the summary by an extractive one (first 400 characters; a stated worst-case assumption, applied to all defenses), the payload reaches gold in 69\% of trials but only 12.5\% reach an agent's input, because gold keeps one summary per group (the one of highest severity) and the analyst and data-quality agents rarely read free text. Switches that explicitly direct agents to read summaries or failing rows did not raise exposure above 12.5\% and lowered benign accuracy.
+
+\begin{figure}[t]\centering
+\includegraphics[width=.72\linewidth]{figs/funnel.pdf}
+\caption{Payload survival by layer, narrative placement, no defense. Natural pipeline (grey) and extractive summaries (blue).}\label{fig:funnel}
+\end{figure}
+
+\subsection{Downstream attack success}
+Table~\ref{tab:asr} lists successes over applicable trials. Counts are tiny: at most 3 of 24--45 per cell, and the Wilson upper bound for TaintGuard's 0/43 is 8\%. Differences between defenses are not statistically distinguishable here. A separate worst-case run uses a deliberately susceptible \emph{stub} model on the real snapshot; it recorded zero successes for every defense (720 rows) and is a plumbing and bound check, not a model finding.
+
+\begin{table}[t]\centering\small
+\begin{tabular}{lcccc}\toprule
+Condition & none & prompt hard. & detector & TaintGuard\\\midrule
+Natural (real1) & 1/45 & 1/32 & 1/44 & 0/43\\
+Extractive summaries (real2) & 0/44 & 1/32 & 0/44 & 0/43\\
++ directed reading (real3) & 0/34 & 3/24 & 1/35 & 0/34\\\bottomrule
+\end{tabular}
+\caption{Attack successes / applicable trials, llama3.1:8b, test split.}\label{tab:asr}
+\end{table}
+
+\subsection{Cost on benign work}
+On matched benign controls, the share of correct analyst and data-quality answers is 95\% (none, detector, TaintGuard) versus 45\% with prompt hardening in the natural condition, and 51\% versus 7\% in the directed-reading condition. The detector adds latency (about 20\,s mean per control run in the first condition, against 4\,s for TaintGuard). TaintGuard raised 6 benign flags in 48 control runs and, on clean baseline data, 13 flags and 62 query refusals with data-quality accuracy of 44\% against 69\% undefended, so its cost is not zero. Triage was scarcely scorable (baseline F1 0.00--0.38 on 6 weeks), so triage results are bounds only.
+
+\subsection{Attacks on the enrichment step}
+We sampled 24 real test complaints and attacked the labeler with five fixed seeds per complaint under each defense (480 attacked enrichments, 429 applicable), scoring against matched controls (Figure~\ref{fig:enrich}).
+\begin{figure}[t]\centering
+\includegraphics[width=.9\linewidth]{figs/enrich.pdf}
+\caption{Share of applicable attacks that changed the labeler output, by goal and defense.}\label{fig:enrich}
+\end{figure}
+Severity manipulation works: instruction override moves severity in 21/23 (down) and 15/15 (up) cases undefended, and a fake system note in 17/23. Choosing a wrong component and planting a summary never succeeded (0/24 each). Overall success is 49\% undefended (Wilson 39--58\%), 51\% with prompt hardening, 22\% (15--31\%) with the detector, and 49\% with TaintGuard. Paired against no defense, the detector flips 27 successes to failures and none the other way ($-27$ points, $p<0.001$); prompt hardening and TaintGuard are indistinguishable from none (1 versus 2 discordant pairs; 0 versus 0). The detector withheld 12.5\% of ordinary narratives. This confirms empirically the gap TaintGuard declares: severity is an in-range typed value, and a wrong severity feeds the average severity downstream without a taint signal. A cross-check of severity against structured fields (deaths, injuries, fire) is a natural extension we did not run.
+
+\section{Limitations}
+One model at one size, one seed, temperature 0; small samples (cells of 20--45); hand-written non-adaptive payloads; worst-case exposure switches are assumptions, not measurements of a real deployment; triage is nearly unscorable on this data; the recalls contract is still provisional; the guard library is larger than planned (about 1{,}400 lines). A stronger summariser or a different model could change the exposure funnel in either direction, so the null downstream result should not be read as safety.
+
+\section{Related work}
+AgentDojo \citep{debenedetti2024} and InjecAgent \citep{zhan2024} benchmark agents with tool outputs; they do not model a warehouse between attacker and reader. Design-level approaches such as CaMeL \citep{debenedetti2025} separate trusted and untrusted data flow; TaintGuard applies a related idea to SQL lineage.
+
+\section{Reproducibility}
+Code, configs, pinned model digest and stub-model CI are in the repository; the real-model runs were executed on a laptop and take 1.5--2.5 hours each. Numbers in this draft were transcribed from the generated reports into \texttt{paper/results.json}; they should be regenerated before submission. Nothing has been published.
+
+\bibliographystyle{plainnat}
+\bibliography{refs}
+\end{document}

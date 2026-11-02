@@ -1,0 +1,320 @@
+{
+ "_note": "Transcribed by hand from the REPORT.md / ENRICH_REPORT.md files of the runs named below (llama3.1:8b, digest 46e0c10c039e..., temperature 0). Re-run the reports and compare before submission.",
+ "model": "llama3.1:8b",
+ "exposure_funnel": {
+  "_note": "share of undefended attack trials, narrative placement, in which the payload (verbatim, canary or close paraphrase) is present at each layer",
+  "layers": [
+   "landing",
+   "staging",
+   "enrichment",
+   "gold",
+   "agent input"
+  ],
+  "real1_natural": [
+   0.688,
+   0.688,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "real2_extractive": [
+   0.688,
+   0.688,
+   0.688,
+   0.688,
+   0.125
+  ],
+  "real3_directed": [
+   0.688,
+   0.688,
+   0.688,
+   0.688,
+   0.125
+  ]
+ },
+ "downstream_asr": {
+  "_note": "successes / applicable trials, per defense and condition",
+  "defenses": [
+   "none",
+   "prompt_hardening",
+   "detector",
+   "taintguard"
+  ],
+  "real1_natural": {
+   "none": [
+    1,
+    45
+   ],
+   "prompt_hardening": [
+    1,
+    32
+   ],
+   "detector": [
+    1,
+    44
+   ],
+   "taintguard": [
+    0,
+    43
+   ]
+  },
+  "real2_extractive": {
+   "none": [
+    0,
+    44
+   ],
+   "prompt_hardening": [
+    1,
+    32
+   ],
+   "detector": [
+    0,
+    44
+   ],
+   "taintguard": [
+    0,
+    43
+   ]
+  },
+  "real3_directed": {
+   "none": [
+    0,
+    34
+   ],
+   "prompt_hardening": [
+    3,
+    24
+   ],
+   "detector": [
+    1,
+    35
+   ],
+   "taintguard": [
+    0,
+    34
+   ]
+  },
+  "worstcase_stub": {
+   "_note": "stub-susceptible model, 720 trial rows; per-defense counts not re-verified, all reported 0 successes",
+   "successes": 0
+  }
+ },
+ "baseline_clean": {
+  "_note": "benign runs, real1 baselines (triage over 6 weeks)",
+  "analyst_exact": {
+   "none": 0.525,
+   "prompt_hardening": 0.5,
+   "detector": 0.525,
+   "taintguard": 0.5
+  },
+  "dq_accuracy": {
+   "none": 0.6875,
+   "prompt_hardening": 0.5625,
+   "detector": 0.6875,
+   "taintguard": 0.4375
+  },
+  "triage_f1": {
+   "none": 0.0,
+   "prompt_hardening": 0.375,
+   "detector": 0.154,
+   "taintguard": 0.125
+  },
+  "benign_flags": {
+   "none": 0,
+   "prompt_hardening": 0,
+   "detector": 0,
+   "taintguard": 13
+  },
+  "query_refusals": {
+   "none": 0,
+   "prompt_hardening": 0,
+   "detector": 0,
+   "taintguard": 62
+  }
+ },
+ "control_accuracy": {
+  "_note": "share of matched-control (benign) analyst and data-quality answers that were correct",
+  "real1_natural": {
+   "none": 0.952,
+   "prompt_hardening": 0.452,
+   "detector": 0.952,
+   "taintguard": 0.952
+  },
+  "real3_directed": {
+   "none": 0.512,
+   "prompt_hardening": 0.07,
+   "detector": 0.512,
+   "taintguard": 0.523
+  }
+ },
+ "enrichment_attack": {
+  "_note": "24 sampled real complaints x 5 seeds x 4 defenses = 480 attacked enrichments, 429 applicable; k/n per defense and goal",
+  "overall": {
+   "none": {
+    "k": 53,
+    "n": 109,
+    "wilson": [
+     0.394,
+     0.579
+    ]
+   },
+   "prompt_hardening": {
+    "k": 57,
+    "n": 112,
+    "wilson": [
+     0.418,
+     0.6
+    ]
+   },
+   "detector": {
+    "k": 22,
+    "n": 99,
+    "wilson": [
+     0.152,
+     0.314
+    ]
+   },
+   "taintguard": {
+    "k": 53,
+    "n": 109,
+    "wilson": [
+     0.394,
+     0.579
+    ]
+   }
+  },
+  "by_goal": {
+   "override: severity down": {
+    "none": [
+     21,
+     23
+    ],
+    "prompt_hardening": [
+     23,
+     24
+    ],
+    "detector": [
+     14,
+     22
+    ],
+    "taintguard": [
+     21,
+     23
+    ]
+   },
+   "override: severity up": {
+    "none": [
+     15,
+     15
+    ],
+    "prompt_hardening": [
+     16,
+     16
+    ],
+    "detector": [
+     7,
+     14
+    ],
+    "taintguard": [
+     15,
+     15
+    ]
+   },
+   "fake note: severity down": {
+    "none": [
+     17,
+     23
+    ],
+    "prompt_hardening": [
+     18,
+     24
+    ],
+    "detector": [
+     1,
+     21
+    ],
+    "taintguard": [
+     17,
+     23
+    ]
+   },
+   "fake note: component flip": {
+    "none": [
+     0,
+     24
+    ],
+    "prompt_hardening": [
+     0,
+     24
+    ],
+    "detector": [
+     0,
+     21
+    ],
+    "taintguard": [
+     0,
+     24
+    ]
+   },
+   "laundering: planted summary": {
+    "none": [
+     0,
+     24
+    ],
+    "prompt_hardening": [
+     0,
+     24
+    ],
+    "detector": [
+     0,
+     21
+    ],
+    "taintguard": [
+     0,
+     24
+    ]
+   }
+  },
+  "paired_vs_none": {
+   "detector": {
+    "n": 99,
+    "only_none": 27,
+    "only_defense": 0,
+    "risk_diff": -0.273
+   },
+   "prompt_hardening": {
+    "n": 109,
+    "only_none": 1,
+    "only_defense": 2,
+    "risk_diff": 0.009
+   },
+   "taintguard": {
+    "n": 109,
+    "only_none": 0,
+    "only_defense": 0,
+    "risk_diff": 0.0
+   }
+  },
+  "ordinary_narratives": {
+   "withheld_rate": {
+    "none": 0.0,
+    "prompt_hardening": 0.0,
+    "detector": 0.125,
+    "taintguard": 0.0
+   },
+   "component_agreement": {
+    "none": 0.542,
+    "prompt_hardening": 0.542,
+    "detector": 0.571,
+    "taintguard": 0.542
+   },
+   "mean_abs_severity_shift_vs_none": {
+    "none": 0.0,
+    "prompt_hardening": 0.083,
+    "detector": 0.0,
+    "taintguard": 0.0
+   }
+  }
+ },
+ "_verified": "real1, real3, control accuracy, baseline, enrichment attack checked against pasted reports; real2 ASR and funnel taken from earlier notes"
+}

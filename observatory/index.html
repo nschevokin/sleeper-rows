@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Agent Observatory</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%23d6336c'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>Agent Observatory</h1>
+    <p class="sub">Replay how a poisoned complaint row travels through the pipeline and which agents it reaches.</p>
+  </div>
+  <div class="pickers">
+    <label>Scenario <select id="scenario" disabled></select></label>
+    <label>Run <select id="run" disabled></select></label>
+    <button id="split" type="button" aria-pressed="false" disabled>Split view</button>
+  </div>
+</header>
+
+<details class="guide" open>
+  <summary>New here? What you are looking at (30 seconds)</summary>
+  <div class="steps3">
+    <div><b>1 &middot; The setup</b><p>A company keeps public car-safety complaints in a data warehouse. Language-model &ldquo;agents&rdquo; read that data: one labels each complaint, others spot trends, answer questions and check data quality.</p></div>
+    <div><b>2 &middot; The attack</b><p>An attacker writes a complaint that contains a hidden instruction aimed at the agents (a <em>poisoned row</em>). If an agent obeys it, it may hide a defect or invent a fact.</p></div>
+    <div><b>3 &middot; What to watch</b><p>Press <b>Play</b>. Cards are complaint rows moving left to right through the pipeline. <span class="red">Red cards and red figures</span> carry the attacker's text. A shield that shows &#10005; means the guard stopped something.</p></div>
+  </div>
+  <ol class="lanes-key" id="lanes-key"></ol>
+  <p class="hint">Compare the three runs: <b>Clean</b> (no attack), <b>Attacked</b> (no defense) and <b>Defended</b> (guard on). Use <b>Split view</b> to see attacked and defended side by side.</p>
+</details>
+
+<section id="scenario-card" class="scenario-card" hidden>
+  <h2 id="sc-title"></h2>
+  <p id="sc-detail"></p>
+  <p id="sc-raw" class="rawid"></p>
+</section>
+<p id="banner" class="banner" role="note" hidden></p>
+<p id="message" class="message" role="status" hidden></p>
+
+<section class="controls" aria-label="Playback controls">
+  <button id="back" type="button" aria-label="Step back one event" disabled>&#9664;&#9664;</button>
+  <button id="play" type="button" aria-label="Play" class="primary" disabled>&#9654; Play</button>
+  <button id="pause" type="button" aria-label="Pause" disabled>Pause</button>
+  <button id="fwd" type="button" aria-label="Step forward one event" disabled>&#9654;&#9654;</button>
+  <label>Speed
+    <select id="speed" disabled>
+      <option value="0.5">0.5x</option>
+      <option value="1" selected>1x</option>
+      <option value="2">2x</option>
+      <option value="4">4x</option>
+    </select>
+  </label>
+  <label class="scrub">Time
+    <input id="scrubber" type="range" min="0" max="1" step="1" value="0" disabled>
+  </label>
+  <output id="clock" for="scrubber">0:00.0 / 0:00.0</output>
+</section>
+
+<ul class="legend" aria-label="Legend">
+  <li><span class="sw card"></span> complaint card</li>
+  <li><span class="sw card bad"></span> <b>&#9888; poisoned</b> card (planted row)</li>
+  <li><span class="sw fig bad"></span> <b>&#9888; tainted</b> actor (consumed a poisoned card)</li>
+  <li><span class="sw stop">&#10005;</span> <b>blocked</b> by the guard</li>
+</ul>
+
+<div class="layout">
+  <main id="stage" class="stage" aria-label="Replay"></main>
+  <aside id="inspector" class="inspector" aria-label="Inspector">
+    <h2>Inspector</h2>
+    <p class="hint">Click an agent figure (or use the Inspect buttons) to freeze time and see its latest steps.</p>
+  </aside>
+</div>
+
+<footer>
+  Data: NHTSA public complaints, investigations and recalls (US public domain). Poisoned rows are injected only into a local copy.
+</footer>
+<script type="module" src="viewer.js"></script>
+</body>
+</html>
