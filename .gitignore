@@ -1,0 +1,28 @@
+.venv/
+__pycache__/
+*.pyc
+.warehouse/
+.dagster/
+results/
+data/raw/
+observatory/replays/
+payloads_private/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+# LaTeX build output and generated figures (rebuild with `make paper`)
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.out
+paper/*.pdf
+paper/figs/
+# local results and per-run replays (curated demo replays live in observatory/replays_demo)
+results_*/
+observatory/replays*/
+!observatory/replays_demo/
+.DS_Store
