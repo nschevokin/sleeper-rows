@@ -1,0 +1,20 @@
+version: 2
+models:
+  - name: quarantine_complaints
+    description: Rows that FAILED landing tests. Nothing in them is validated.
+    row_floor: structured
+    columns:
+      - {name: _key, trust: untrusted}
+      - {name: failed_tests, trust: trusted}
+      - {name: row_json, trust: untrusted}
+      - {name: _batch, trust: trusted}
+      - {name: _source_file, trust: trusted}
+  - name: contract_results
+    row_floor: structured
+    columns:
+      - {name: model, trust: trusted}
+      - {name: test, trust: trusted}
+      - {name: column_name, trust: trusted}
+      - {name: failed_rows, trust: structured, type: integer, tests: [{range: [0, 100000000]}]}
+      - {name: detail, trust: trusted}
+      - {name: batch, trust: trusted}

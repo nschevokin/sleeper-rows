@@ -1,0 +1,13 @@
+version: 2
+models:
+  - name: enriched_complaints
+    description: Written by agents/enrichment.py (an LLM), not by SQL.
+    llm_derived: true
+    row_floor: structured
+    key: [complaint_key]
+    columns:
+      - {name: complaint_key, trust: structured, derived_from: stg_complaints.complaint_key}
+      - {name: component_llm, trust: structured, tests: [{accepted_values_ref: component_systems}]}
+      - {name: severity_llm, trust: structured, type: integer, tests: [{range: [1, 5]}]}
+      - {name: summary_llm, trust: untrusted}
+      - {name: status, trust: structured, tests: [{accepted_values: [ok, malformed, withheld]}]}

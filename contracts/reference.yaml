@@ -1,0 +1,12 @@
+version: 2
+# Operator-approved vocabularies from the frozen snapshot (pipeline/transforms.load_reference).
+models:
+  - name: ref_vehicles
+    row_floor: trusted
+    columns:
+      - {name: make, trust: trusted}
+      - {name: model, trust: trusted}
+  - name: ref_components
+    row_floor: trusted
+    columns:
+      - {name: compdesc, trust: trusted}

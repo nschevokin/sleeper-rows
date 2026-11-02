@@ -1,0 +1,20 @@
+version: 2
+# Verified against NHTSA's INV.txt (11 fields, tab-delimited). Reference data: trusted.
+models:
+  - name: raw_investigations
+    description: Ground truth that a defect pattern was worth investigating. NHTSA-authored.
+    row_floor: trusted
+    source: {role: investigations, delimiter: "\t", header: false, min_columns: 11, max_columns: 11}
+    key: [NHTSA_ACTION_NUMBER, MAKE, MODEL, YEAR, COMPNAME]
+    columns:
+      - {name: NHTSA_ACTION_NUMBER, position: 1, trust: trusted}
+      - {name: MAKE, position: 2, trust: trusted}
+      - {name: MODEL, position: 3, trust: trusted}
+      - {name: YEAR, position: 4, trust: trusted, tests: [{regex: "^\\d{4}$"}]}
+      - {name: COMPNAME, position: 5, trust: trusted}
+      - {name: MFR_NAME, position: 6, trust: trusted}
+      - {name: ODATE, position: 7, trust: trusted, tests: [{regex: "^\\d{8}$"}]}
+      - {name: CDATE, position: 8, trust: trusted}
+      - {name: CAMPNO, position: 9, trust: trusted}
+      - {name: SUBJECT, position: 10, trust: trusted}
+      - {name: SUMMARY, position: 11, trust: trusted}

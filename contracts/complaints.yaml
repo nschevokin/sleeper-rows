@@ -1,0 +1,263 @@
+version: 2
+# Complaints flat file. Field list verified against NHTSA's CMPL.txt (51 fields, tab-delimited, no header).
+# Fields 50-51 were added in April 2026; the loader accepts 49..51 columns (see ADR 0003).
+# RULE: a column may be `structured` only if an enforced test bounds its form; rows that fail
+# an enforced test are quarantined at landing, never loaded.
+models:
+  - name: raw_complaints
+    description: Untrusted input stream, one row per complaint-component (ODINO repeats per component).
+    source: {role: complaints, delimiter: "\t", header: false, min_columns: 49, max_columns: 51}
+    key: [ODINO, COMPDESC]
+    columns:
+      - name: CMPLID
+        position: 1
+        trust: structured
+        description: "NHTSA internal unique sequence ID; can change between file versions"
+        tests: [{"regex": "^\\d{1,9}$"}]
+      - name: ODINO
+        position: 2
+        trust: structured
+        description: "NHTSA reference number; repeats for multiple components"
+        tests: [{"regex": "^\\d{1,9}$"}, "not_null"]
+      - name: MFR_NAME
+        position: 3
+        trust: untrusted
+        description: "Manufacturer name (free text)"
+      - name: MAKETXT
+        position: 4
+        trust: untrusted
+        description: "Vehicle make (free text; promoted in staging via closed vocabulary)"
+      - name: MODELTXT
+        position: 5
+        trust: untrusted
+        description: "Vehicle model (free text; promoted in staging via closed vocabulary)"
+      - name: YEARTXT
+        position: 6
+        trust: structured
+        description: "Model year, 9999 if unknown"
+        tests: [{"regex": "^\\d{4}$"}]
+      - name: CRASH
+        position: 7
+        trust: structured
+        description: "Y/N"
+        tests: [{"accepted_values": ["Y", "N"]}]
+      - name: FAILDATE
+        position: 8
+        trust: structured
+        description: "Incident date YYYYMMDD"
+        tests: [{"regex": "^(\\d{8})?$"}]
+      - name: FIRE
+        position: 9
+        trust: structured
+        description: "Y/N"
+        tests: [{"accepted_values": ["Y", "N"]}]
+      - name: INJURED
+        position: 10
+        trust: structured
+        description: "People injured"
+        tests: [{"regex": "^\\d{0,2}$"}]
+      - name: DEATHS
+        position: 11
+        trust: structured
+        description: "Fatalities"
+        tests: [{"regex": "^\\d{0,2}$"}]
+      - name: COMPDESC
+        position: 12
+        trust: structured
+        description: "Component description; member of the frozen component vocabulary"
+        tests: ["not_null", {"accepted_values_ref": "components"}]
+      - name: CITY
+        position: 13
+        trust: untrusted
+        pii: true
+        description: "Consumer city (personal; dropped)"
+      - name: STATE
+        position: 14
+        trust: structured
+        pii: true
+        description: "Consumer state (personal; dropped)"
+        tests: [{"regex": "^[A-Z0-9]{0,2}$"}]
+      - name: VIN
+        position: 15
+        trust: untrusted
+        pii: true
+        description: "Partial VIN (personal; dropped)"
+      - name: DATEA
+        position: 16
+        trust: structured
+        description: "Date added to file"
+        tests: [{"regex": "^(\\d{8})?$"}]
+      - name: LDATE
+        position: 17
+        trust: structured
+        description: "Date NHTSA received the complaint"
+        tests: [{"regex": "^\\d{8}$"}]
+      - name: MILES
+        position: 18
+        trust: structured
+        description: "Mileage at failure"
+        tests: [{"regex": "^\\d{0,7}$"}]
+      - name: OCCURENCES
+        position: 19
+        trust: structured
+        description: "Number of occurrences (sic: NHTSA spells it with one R)"
+        tests: [{"regex": "^\\d{0,4}$"}]
+      - name: CDESCR
+        position: 20
+        trust: untrusted
+        description: "Complaint narrative, up to 2048 chars"
+      - name: CMPL_TYPE
+        position: 21
+        trust: structured
+        description: "Complaint source code"
+        tests: [{"regex": "^[A-Z0-9]{0,4}$"}]
+      - name: POLICE_RPT_YN
+        position: 22
+        trust: structured
+        description: "Y/N"
+        tests: [{"accepted_values": ["Y", "N"]}]
+      - name: PURCH_DT
+        position: 23
+        trust: structured
+        description: "Purchase date"
+        tests: [{"regex": "^(\\d{8})?$"}]
+      - name: ORIG_OWNER_YN
+        position: 24
+        trust: structured
+        description: "Y/N"
+        tests: [{"accepted_values": ["Y", "N"]}]
+      - name: ANTI_BRAKES_YN
+        position: 25
+        trust: structured
+        description: "Y/N"
+        tests: [{"accepted_values": ["Y", "N"]}]
+      - name: CRUISE_CONT_YN
+        position: 26
+        trust: structured
+        description: "Y/N"
+        tests: [{"accepted_values": ["Y", "N"]}]
+      - name: NUM_CYLS
+        position: 27
+        trust: structured
+        description: "Cylinders"
+        tests: [{"regex": "^\\d{0,2}$"}]
+      - name: DRIVE_TRAIN
+        position: 28
+        trust: structured
+        description: "AWD/4WD/FWD/RWD"
+        tests: [{"regex": "^[A-Z0-9]{0,4}$"}]
+      - name: FUEL_SYS
+        position: 29
+        trust: structured
+        description: "FI/TB"
+        tests: [{"regex": "^[A-Z0-9]{0,4}$"}]
+      - name: FUEL_TYPE
+        position: 30
+        trust: structured
+        description: "BF/CN/DS/GS/HE"
+        tests: [{"regex": "^[A-Z0-9]{0,4}$"}]
+      - name: TRANS_TYPE
+        position: 31
+        trust: structured
+        description: "AUTO/MAN"
+        tests: [{"regex": "^[A-Z0-9]{0,4}$"}]
+      - name: VEH_SPEED
+        position: 32
+        trust: structured
+        description: "Vehicle speed"
+        tests: [{"regex": "^\\d{0,3}$"}]
+      - name: DOT
+        position: 33
+        trust: untrusted
+        description: "DOT tire identifier (loosely validated free text)"
+      - name: TIRE_SIZE
+        position: 34
+        trust: untrusted
+        description: "Tire size (loosely validated free text)"
+      - name: LOC_OF_TIRE
+        position: 35
+        trust: structured
+        description: "Tire location code"
+        tests: [{"regex": "^[A-Z0-9]{0,4}$"}]
+      - name: TIRE_FAIL_TYPE
+        position: 36
+        trust: structured
+        description: "Tire failure type code"
+        tests: [{"regex": "^[A-Z0-9]{0,4}$"}]
+      - name: ORIG_EQUIP_YN
+        position: 37
+        trust: structured
+        description: "Y/N"
+        tests: [{"accepted_values": ["Y", "N"]}]
+      - name: MANUF_DT
+        position: 38
+        trust: structured
+        description: "Manufacture date"
+        tests: [{"regex": "^(\\d{8})?$"}]
+      - name: SEAT_TYPE
+        position: 39
+        trust: structured
+        description: "Child seat type code"
+        tests: [{"regex": "^[A-Z0-9]{0,4}$"}]
+      - name: RESTRAINT_TYPE
+        position: 40
+        trust: structured
+        description: "Installation system code"
+        tests: [{"regex": "^[A-Z0-9]{0,4}$"}]
+      - name: DEALER_NAME
+        position: 41
+        trust: untrusted
+        pii: true
+        description: "Dealer name (personal; dropped)"
+      - name: DEALER_TEL
+        position: 42
+        trust: untrusted
+        pii: true
+        description: "Dealer telephone (personal; dropped)"
+      - name: DEALER_CITY
+        position: 43
+        trust: untrusted
+        pii: true
+        description: "Dealer city (personal; dropped)"
+      - name: DEALER_STATE
+        position: 44
+        trust: structured
+        pii: true
+        description: "Dealer state (personal; dropped)"
+        tests: [{"regex": "^[A-Z0-9]{0,2}$"}]
+      - name: DEALER_ZIP
+        position: 45
+        trust: structured
+        pii: true
+        description: "Dealer ZIP (personal; dropped)"
+        tests: [{"regex": "^[0-9-]{0,10}$"}]
+      - name: PROD_TYPE
+        position: 46
+        trust: structured
+        description: "Product type code V/T/E/C"
+        tests: [{"regex": "^[A-Z0-9]{0,4}$"}]
+      - name: REPAIRED_YN
+        position: 47
+        trust: structured
+        description: "Y/N"
+        tests: [{"accepted_values": ["Y", "N"]}]
+      - name: MEDICAL_ATTN
+        position: 48
+        trust: structured
+        description: "Y/N"
+        tests: [{"accepted_values": ["Y", "N"]}]
+      - name: VEHICLES_TOWED_YN
+        position: 49
+        trust: structured
+        description: "Y/N"
+        tests: [{"accepted_values": ["Y", "N"]}]
+      - name: STATE_OF_INCIDENT
+        position: 50
+        trust: structured
+        description: "Incident state code (added April 2026)"
+        tests: [{"regex": "^[A-Z0-9]{0,2}$"}]
+      - name: VEHICLE_OPERATOR
+        position: 51
+        trust: untrusted
+        pii: true
+        description: "Vehicle operator name (personal; dropped; added April 2026)"

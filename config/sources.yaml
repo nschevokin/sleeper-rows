@@ -1,0 +1,12 @@
+# Where the NHTSA flat files come from. The container this was written in cannot reach NHTSA, so
+# these URLs are NOT verified by a download; `pipeline.cli download` fails loudly if they are wrong.
+# Verified from NHTSA's CMPL.txt: the complaints archive is named FLAT_CMPL.zip (also split as
+# COMPLAINTS_RECEIVED_YYYY-YYYY.zip) and NHTSA states data is published daily. The directory and the
+# names of daily update files are an assumption: confirm them on the NHTSA datasets page and edit here.
+# Verified by HTTP 200 from the user's machine on 2026-10-28: complaints, investigations, and
+# recalls (FLAT_RCL_POST_2010.zip; FLAT_RCL.zip is a 404). Daily update names are still unconfirmed.
+files:
+  complaints: https://static.nhtsa.gov/odi/ffdd/cmpl/FLAT_CMPL.zip
+  investigations: https://static.nhtsa.gov/odi/ffdd/inv/FLAT_INV.zip
+  recalls: https://static.nhtsa.gov/odi/ffdd/rcl/FLAT_RCL_POST_2010.zip
+updates: []   # daily complaint update URLs, once confirmed

@@ -1,0 +1,39 @@
+version: 2
+# PROVISIONAL layout (RCL.txt could not be fetched from the build environment).
+# Run `make profile` on the laptop; the loader fails with a column-count message if this is wrong.
+models:
+  - name: raw_recalls
+    description: Ground truth that a defect was real. NHTSA-authored reference data.
+    row_floor: trusted
+    source: {role: recalls, delimiter: "\t", header: false, min_columns: 29, max_columns: 29, provisional: true}
+    key: [CAMPNO, MAKETXT, MODELTXT, YEARTXT, COMPNAME]
+    columns:
+      - {name: RECORD_ID, position: 1, trust: trusted}
+      - {name: CAMPNO, position: 2, trust: trusted}
+      - {name: MAKETXT, position: 3, trust: trusted}
+      - {name: MODELTXT, position: 4, trust: trusted}
+      - {name: YEARTXT, position: 5, trust: trusted}
+      - {name: MFGCAMPNO, position: 6, trust: trusted}
+      - {name: COMPNAME, position: 7, trust: trusted}
+      - {name: MFGNAME, position: 8, trust: trusted}
+      - {name: BGMAN, position: 9, trust: trusted}
+      - {name: ENDMAN, position: 10, trust: trusted}
+      - {name: RCLTYPECD, position: 11, trust: trusted}
+      - {name: POTAFF, position: 12, trust: trusted}
+      - {name: ODATE, position: 13, trust: trusted}
+      - {name: INFLUENCED_BY, position: 14, trust: trusted}
+      - {name: MFGTXT, position: 15, trust: trusted}
+      - {name: RCDATE, position: 16, trust: trusted}
+      - {name: DATEA, position: 17, trust: trusted}
+      - {name: RPNO, position: 18, trust: trusted}
+      - {name: FMVSS, position: 19, trust: trusted}
+      - {name: DESC_DEFECT, position: 20, trust: trusted}
+      - {name: CONEQUENCE_DEFECT, position: 21, trust: trusted}
+      - {name: CORRECTIVE_ACTION, position: 22, trust: trusted}
+      - {name: NOTES, position: 23, trust: trusted}
+      - {name: RCL_CMPT_ID, position: 24, trust: trusted}
+      - {name: MFR_COMP_NAME, position: 25, trust: trusted}
+      - {name: MFR_COMP_DESC, position: 26, trust: trusted}
+      - {name: MFR_COMP_PTNO, position: 27, trust: trusted}
+      - {name: DO_NOT_DRIVE, position: 28, trust: trusted}
+      - {name: PARK_OUTSIDE, position: 29, trust: trusted}
